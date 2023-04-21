@@ -1,5 +1,5 @@
 import { Button, Space } from "antd";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import EmailEditorReact from "react-email-editor";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,7 +8,7 @@ function EmailEditor() {
   const temp_design = useSelector((state) => state.emailEditor.temp_design);
   const dispatch = useDispatch();
   const emailEditorRef = useRef(null);
-  const saveDesign = () => {
+  const tempDesign = () => {
     emailEditorRef.current?.editor?.saveDesign((design) => {
       dispatch(saveTempDesign(design));
     });
@@ -19,7 +19,7 @@ function EmailEditor() {
     emailEditorRef.current?.editor?.addEventListener(
       "design:updated",
       function () {
-        saveDesign();
+        tempDesign();
       }
     );
   };
@@ -37,7 +37,7 @@ function EmailEditor() {
         <Space>
           <Button type="primary">Send Design</Button>
           <Button onClick={() => exportHtml()}>Export Design</Button>
-          <Button onClick={() => saveDesign()}>Save Design</Button>
+          <Button onClick={() => tempDesign()}>Save Design</Button>
         </Space>
       </StyledHeader>
 
@@ -51,6 +51,5 @@ const StyledHeader = styled.header`
   justify-content: flex-end;
   margin-bottom: 30px;
 `;
-const SaveButton = styled.button``;
 
 export default EmailEditor;
