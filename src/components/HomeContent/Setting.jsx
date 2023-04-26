@@ -4,6 +4,7 @@ import { Avatar, Button, Form, Input, Space, Typography } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import React from "react";
 import { settingSchema } from "../../utils/validationSchema";
+import apiClient from "../../network/api";
 
 function Setting() {
   const formik = useFormik({
@@ -14,7 +15,16 @@ function Setting() {
     },
 
     onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+      console.log(values);
+      try {
+        apiClient
+          .patch("/api/v1/users/update", values)
+          .then((res) => console.log(res))
+
+          .catch((error) => alert(error.response.data.message));
+      } catch (error) {
+        console.log(error.response.data.message);
+      }
     },
   });
   const yupSync = {

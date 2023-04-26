@@ -17,12 +17,12 @@ function HomeLayout({ children }) {
     },
     {
       label: "Save Data",
-      key: "savedata",
+      key: "/savedata",
       icon: <MailOutlined />,
     },
     {
       label: "Settings",
-      key: "setting",
+      key: "/setting",
       icon: <MailOutlined />,
     },
   ];

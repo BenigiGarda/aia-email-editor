@@ -2,30 +2,34 @@ import { Button, Space } from "antd";
 import React, { useRef, useState } from "react";
 import EmailEditorReact from "react-email-editor";
 import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { saveTempDesign } from "../../store/slice/emailEditorSlice";
+
 import apiClient from "../../network/api";
-function EmailEditor() {
-  const temp_design = useSelector((state) => state.emailEditor.temp_design);
-  const [tempLoaded, setTempLoaded] = useState(false);
-  const dispatch = useDispatch();
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "react-query";
+
+function EmailEditorDraft() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [savedDesign, setSavedDesign] = useState(null);
+  const [draftLoaded, setDraftLoaded] = useState(false);
   const emailEditorRef = useRef(null);
-  const tempDesign = () => {
-    emailEditorRef.current?.editor?.saveDesign((design) => {
-      dispatch(saveTempDesign(design));
-    });
+  const getDraft = async () => {
+    return await apiClient
+      .get("/api/v1/emailtemplate/" + id)
+      .then((res) => res.data);
   };
-  const saveDesign = async () => {
+  const { data } = useQuery("draftData", getDraft);
+
+  const saveDraft = async () => {
     const body = {
-      title: "draft#",
-      user: "testke2",
-      value: temp_design,
+      value: savedDesign,
     };
     try {
       apiClient
-        .post("/api/v1/emailtemplate/createtemplate", body)
+        .patch(`/api/v1/emailtemplate/edit/` + id, body)
         .then((res) => {
           console.log(res);
+          navigate("/savedata");
         })
         .catch((error) => console.log(error));
     } catch (error) {
@@ -33,14 +37,16 @@ function EmailEditor() {
     }
   };
   const onLoad = () => {
-    if (tempLoaded === false) {
-      emailEditorRef.current?.editor?.loadDesign(temp_design);
-      setTempLoaded(true);
+    if (draftLoaded === false) {
+      emailEditorRef.current?.editor?.loadDesign(data.template.value);
+      setDraftLoaded(true);
     }
     emailEditorRef.current?.editor?.addEventListener(
       "design:updated",
       function () {
-        tempDesign();
+        emailEditorRef.current.editor.saveDesign((design) => {
+          setSavedDesign(design);
+        });
       }
     );
   };
@@ -59,7 +65,7 @@ function EmailEditor() {
         <Space>
           <Button type="primary">Send Design</Button>
           <Button onClick={() => exportHtml()}>Export Design</Button>
-          <Button onClick={() => saveDesign()}>Save Design</Button>
+          <Button onClick={() => saveDraft()}>Save Design</Button>
         </Space>
       </StyledHeader>
 
@@ -74,4 +80,4 @@ const StyledHeader = styled.header`
   margin-bottom: 30px;
 `;
 
-export default EmailEditor;
+export default EmailEditorDraft;

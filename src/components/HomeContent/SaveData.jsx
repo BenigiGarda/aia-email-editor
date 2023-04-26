@@ -1,10 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import SaveCard from "../../components/Card/SaveCard";
 import { Space } from "antd";
+import apiClient from "../../network/api";
 
 function SaveData() {
   let currentDate = new Date();
+  const [data, setData] = useState([]);
+  const getData = async () => {
+    await apiClient
+      .get("http://localhost:5000/api/v1/emailtemplate/")
+      .then((res) => {
+        console.log(res);
+        setData(res.data.template);
+      });
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
   const dummyItem = [
     {
       name: "Test",
@@ -78,8 +92,8 @@ function SaveData() {
   return (
     <StyledDiv>
       <StyledSpace>
-        {dummyItem.map((item, index) => {
-          return <SaveCard item={item} key={index} />;
+        {data.map((item, index) => {
+          return <SaveCard item={item} key={index} index={index + 1} />;
         })}
       </StyledSpace>
     </StyledDiv>
