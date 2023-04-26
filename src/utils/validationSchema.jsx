@@ -8,7 +8,10 @@ export const loginSchema = yup.object().shape({
   password: yup.string().required("Password harus diisi"),
 });
 export const settingSchema = yup.object().shape({
-  full_name: yup.string().required("Nama harus diisi"),
-  email: yup.string().email("Email tidak valid").required("Email harus diisi"),
+  name: yup.string().required("Nama harus diisi"),
+  phone: yup
+    .string()
+    .matches(/^\d+$/, "Harap mengisi angka")
+    .required("Nomor harus diisi"),
   password: yup.string().required("Password harus diisi"),
 });

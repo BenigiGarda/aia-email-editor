@@ -1,10 +1,10 @@
 import styled from "styled-components";
-import { Formik, useFormik } from "formik";
-import { Button, Checkbox, Form, Input, Space } from "antd";
+import { useFormik } from "formik";
+import { Button, Checkbox, Form, Input } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { loginSchema } from "../utils/validationSchema";
 import apiClient from "../network/api";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 function Login() {
   const navigate = useNavigate();
   const formik = useFormik({
@@ -14,14 +14,14 @@ function Login() {
     },
 
     onSubmit: (values) => {
-      console.log(values);
       try {
         apiClient
-          .post("/api/v1/users/login", values)
-          .then(() => {
-            navigate("otp");
+          .post("/login", values)
+          .then((res) => {
+            Cookies.set("userId", res.data.userId);
+            navigate(`otp/${res.data.userId}`);
           })
-          .catch((error) => alert(error.response.data.message));
+          .catch((error) => console.log(error));
       } catch (error) {
         console.log(error.response.data.message);
       }

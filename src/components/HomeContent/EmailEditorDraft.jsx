@@ -2,35 +2,41 @@ import { Button, Space } from "antd";
 import React, { useRef, useState } from "react";
 import EmailEditorReact from "react-email-editor";
 import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { saveTempDesign } from "../../store/slice/emailEditorSlice";
-import Cookies from "js-cookie";
+
+import apiClient from "../../network/api";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-function EmailEditor() {
-  const temp_design = useSelector((state) => state.emailEditor.temp_design);
-  const [tempLoaded, setTempLoaded] = useState(false);
-  const dispatch = useDispatch();
+import Cookies from "js-cookie";
+import { useQuery } from "react-query";
+
+function EmailEditorDraft() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [savedDesign, setSavedDesign] = useState(null);
+  const [draftLoaded, setDraftLoaded] = useState(false);
   const emailEditorRef = useRef(null);
-
-  const userId = Cookies.get("userId");
-  const tempDesign = () => {
-    emailEditorRef.current?.editor?.saveDesign((design) => {
-      dispatch(saveTempDesign(design));
+  const { data } = useQuery("draftData", async () => {
+    return await axios.get("http://localhost:8000/getemailbyid/" + id, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get("userToken")}`,
+      },
     });
-  };
+  });
 
-  const saveDesign = async () => {
+  const saveDraft = async () => {
     const body = {
-      body: temp_design,
-      userId: userId,
+      body: savedDesign,
     };
-
     try {
-      axios
-        .post("http://localhost:8000/createemail", body, {
+      apiClient
+        .patch(`http://localhost:8000/updateemail/` + id, body, {
           headers: {
             Authorization: `Bearer ${Cookies.get("userToken")}`,
           },
+        })
+        .then((res) => {
+          console.log(res);
+          navigate("/savedata");
         })
         .catch((error) => console.log(error));
     } catch (error) {
@@ -38,14 +44,16 @@ function EmailEditor() {
     }
   };
   const onLoad = () => {
-    if (tempLoaded === false) {
-      emailEditorRef.current?.editor?.loadDesign(temp_design);
-      setTempLoaded(true);
+    if (draftLoaded === false) {
+      emailEditorRef.current?.editor?.loadDesign(data.data[0].body);
+      setDraftLoaded(true);
     }
     emailEditorRef.current?.editor?.addEventListener(
       "design:updated",
       function () {
-        tempDesign();
+        emailEditorRef.current.editor.saveDesign((design) => {
+          setSavedDesign(design);
+        });
       }
     );
   };
@@ -64,7 +72,7 @@ function EmailEditor() {
         <Space>
           <Button type="primary">Send Design</Button>
           <Button onClick={() => exportHtml()}>Export Design</Button>
-          <Button onClick={() => saveDesign()}>Save Design</Button>
+          <Button onClick={() => saveDraft()}>Save Design</Button>
         </Space>
       </StyledHeader>
 
@@ -79,4 +87,4 @@ const StyledHeader = styled.header`
   margin-bottom: 30px;
 `;
 
-export default EmailEditor;
+export default EmailEditorDraft;
