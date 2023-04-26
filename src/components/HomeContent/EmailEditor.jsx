@@ -4,28 +4,33 @@ import EmailEditorReact from "react-email-editor";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { saveTempDesign } from "../../store/slice/emailEditorSlice";
-import apiClient from "../../network/api";
+import Cookies from "js-cookie";
+import axios from "axios";
 function EmailEditor() {
   const temp_design = useSelector((state) => state.emailEditor.temp_design);
   const [tempLoaded, setTempLoaded] = useState(false);
   const dispatch = useDispatch();
   const emailEditorRef = useRef(null);
+
+  const userId = Cookies.get("userId");
   const tempDesign = () => {
     emailEditorRef.current?.editor?.saveDesign((design) => {
       dispatch(saveTempDesign(design));
     });
   };
+
   const saveDesign = async () => {
     const body = {
-      title: "draft#",
-      user: "testke2",
-      value: temp_design,
+      body: temp_design,
+      userId: userId,
     };
+
     try {
-      apiClient
-        .post("/api/v1/emailtemplate/createtemplate", body)
-        .then((res) => {
-          console.log(res);
+      axios
+        .post("http://localhost:8000/createemail", body, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("userToken")}`,
+          },
         })
         .catch((error) => console.log(error));
     } catch (error) {

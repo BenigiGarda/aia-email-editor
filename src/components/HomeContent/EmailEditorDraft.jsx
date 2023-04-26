@@ -5,6 +5,8 @@ import styled from "styled-components";
 
 import apiClient from "../../network/api";
 import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import Cookies from "js-cookie";
 import { useQuery } from "react-query";
 
 function EmailEditorDraft() {
@@ -13,20 +15,25 @@ function EmailEditorDraft() {
   const [savedDesign, setSavedDesign] = useState(null);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const emailEditorRef = useRef(null);
-  const getDraft = async () => {
-    return await apiClient
-      .get("/api/v1/emailtemplate/" + id)
-      .then((res) => res.data);
-  };
-  const { data } = useQuery("draftData", getDraft);
+  const { data } = useQuery("draftData", async () => {
+    return await axios.get("http://localhost:8000/getemailbyid/" + id, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get("userToken")}`,
+      },
+    });
+  });
 
   const saveDraft = async () => {
     const body = {
-      value: savedDesign,
+      body: savedDesign,
     };
     try {
       apiClient
-        .patch(`/api/v1/emailtemplate/edit/` + id, body)
+        .patch(`http://localhost:8000/updateemail/` + id, body, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("userToken")}`,
+          },
+        })
         .then((res) => {
           console.log(res);
           navigate("/savedata");
@@ -38,7 +45,7 @@ function EmailEditorDraft() {
   };
   const onLoad = () => {
     if (draftLoaded === false) {
-      emailEditorRef.current?.editor?.loadDesign(data.template.value);
+      emailEditorRef.current?.editor?.loadDesign(data.data[0].body);
       setDraftLoaded(true);
     }
     emailEditorRef.current?.editor?.addEventListener(

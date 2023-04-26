@@ -2,8 +2,13 @@ import styled from "styled-components";
 import { Button, Input, Typography } from "antd";
 import { useRef } from "react";
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import apiClient from "../network/api";
+import Cookies from "js-cookie";
 
 function OTP() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const textbase = useRef(null);
   const [OtpValue, setOtpValue] = useState({});
 
@@ -17,7 +22,22 @@ function OTP() {
   };
   const onSubmit = () => {
     const test = Object.values(OtpValue);
-    console.log(test.join(""));
+    const body = {
+      id: id,
+      otp: test.join(""),
+    };
+    try {
+      apiClient
+        .post("/sendotp", body)
+        .then((res) => {
+          Cookies.set("userToken", res.data.token);
+          navigate(`/`);
+        })
+        .catch((error) => alert(error.response.data.message));
+    } catch (error) {
+      console.log(error.response.data.message);
+    }
+    // console.log(test.join(""));
   };
   const onReset = () => {
     setOtpValue({});

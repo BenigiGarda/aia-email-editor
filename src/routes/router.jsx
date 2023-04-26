@@ -13,7 +13,7 @@ const Router = () => {
     <>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/login/otp" element={<OTP />} />
+        <Route path="/login/otp/:id" element={<OTP />} />
         <Route path="/" element={<Home />}>
           <Route path="/" element={<EmailEditor />} />
           <Route path="/:id" element={<EmailEditorDraft />} />

@@ -4,11 +4,23 @@ import React from "react";
 import styled from "styled-components";
 import AIALogo from "../../assets/images/aialogofull.svg";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "react-query";
+import axios from "axios";
+import Cookies from "js-cookie";
 
-const { Header, Footer, Sider, Content } = Layout;
+const { Header, Sider, Content } = Layout;
 function HomeLayout({ children }) {
+  const userId = Cookies.get("userId");
   const navigate = useNavigate();
   const location = useLocation();
+  const { data } = useQuery("userInformation", async () => {
+    return await axios.get("http://localhost:8000/getprofile/" + userId, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get("userToken")}`,
+      },
+    });
+  });
+
   const items = [
     {
       label: "Home Editor",
@@ -44,7 +56,7 @@ function HomeLayout({ children }) {
       <Layout>
         <StyledHeader>
           <StyledUserSpace>
-            <UserName>Jonathan Joestar</UserName>
+            <UserName>{data?.data[0].name}</UserName>
             <Avatar size={50} icon={<UserOutlined />} />
           </StyledUserSpace>
         </StyledHeader>
